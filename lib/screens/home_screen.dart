@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:weather_app/screens/weather_list.dart';
 import '../utilities/color_pallet.dart';
 import '../utilities/media_query.dart';
 
@@ -53,7 +55,15 @@ class _HomeScreenState extends State<HomeScreen> with ColorPallet {
                 ),
               ],
             ),
-            IconButton(onPressed: () {}, icon: const Icon(Icons.menu))
+            IconButton(
+                onPressed: () {
+                  Get.to(
+                    () => const WeatherList(),
+                    transition: Transition.downToUp,
+                    duration: const Duration(milliseconds: 500),
+                  );
+                },
+                icon: const Icon(Icons.menu))
           ],
         ),
       ),
@@ -96,7 +106,7 @@ class _HomeScreenState extends State<HomeScreen> with ColorPallet {
                 Align(
                   alignment: Alignment.topCenter,
                   child: Text(
-                    '`c',
+                    'ºc',
                     style: Theme.of(context).textTheme.titleMedium,
                   ),
                 )
@@ -121,7 +131,7 @@ class _HomeScreenState extends State<HomeScreen> with ColorPallet {
             children: [
               _buildIconDetail('assets/humidity.png', 'HUMIDITY', '52%'),
               _buildIconDetail('assets/wind.png', 'WIND', '15Km/h'),
-              _buildIconDetail('assets/feels_like.png', 'FEELS LIKE', '24`'),
+              _buildIconDetail('assets/feels_like.png', 'FEELS LIKE', '24º'),
             ],
           ),
           Container(
@@ -131,6 +141,17 @@ class _HomeScreenState extends State<HomeScreen> with ColorPallet {
             decoration: BoxDecoration(
               color: foregroundColor,
               borderRadius: BorderRadius.circular(24),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                _buildDayWeather('Wed 16', 'assets/half_cloudy.png', 22, '1-5'),
+                _buildDayWeather(
+                    'Thu 17', 'assets/sun_with_cloud.png', 25, '1-5'),
+                _buildDayWeather(
+                    'Fro 18', 'assets/sun_with_cloud.png', 23, '1-5'),
+                _buildDayWeather('Sat 19', 'assets/raining.png', 25, '1-5'),
+              ],
             ),
           ),
         ],
@@ -147,6 +168,49 @@ class _HomeScreenState extends State<HomeScreen> with ColorPallet {
         const SizedBox(height: 3),
         Text(des, style: Theme.of(context).textTheme.displayMedium),
       ],
+    );
+  }
+
+  _buildDayWeather(String day, String imagePath, int temprature, String wind) {
+    return Expanded(
+      child: Stack(
+        children: [
+          Column(
+            children: [
+              const SizedBox(height: 15),
+              Text(
+                day,
+                style: Theme.of(context).textTheme.displayMedium,
+              ),
+              Image.asset(
+                imagePath,
+                fit: BoxFit.cover,
+              ),
+            ],
+          ),
+          Positioned(
+            left: 35,
+            top: 90,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Text(
+                  '$tempratureº',
+                  style: Theme.of(context).textTheme.titleSmall,
+                ),
+                const SizedBox(height: 7),
+                Text(
+                  '$wind\nkm/h',
+                  textAlign: TextAlign.center,
+                  style: Theme.of(context).textTheme.titleSmall!.copyWith(
+                        fontSize: 11,
+                      ),
+                )
+              ],
+            ),
+          )
+        ],
+      ),
     );
   }
 }

@@ -1,5 +1,7 @@
 import 'dart:convert';
 
+import 'package:fast_csv/csv_converter.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import 'package:connectivity_plus/connectivity_plus.dart';
@@ -15,22 +17,111 @@ class DataController extends GetxController {
   RxBool isWeatherSelected = false.obs;
   bool fetchFromSelection = false;
   List<WeatherData> theNext3DaysWeatherList = [];
+  List<WeatherData> defaultWeatherList = [];
+  List<WeatherData> addedWeatherList = [];
   double latitude = 33;
   double longtude = 44;
   double? currentLatitude;
   double? currentLongitude;
   RxString backgroundImage = ''.obs;
+  final cities = {
+    'New York': {
+      'latitude': 40.7128,
+      'longitude': -74.0060,
+    },
+    'Paris': {
+      'latitude': 48.8566,
+      'longitude': 2.3522,
+    },
+  };
 
-  getBackgroundImage(String cityName) async {
-    final res = await http.get(Uri.parse(
-        'https://api.unsplash.com/photos/random?query=paris&count=1&client_id=wW7pcYmq5ZEgMBlPyyeYn_HDj9XCqIKTbOQZatFJZC0'));
-    final data = jsonDecode(res.body);
-    if (data.runtimeType == List) {
-      backgroundImage.value = data[0]['urls']['regular'];
+  Future<void> fetchWeatherUsingCoordinate(
+      {required double longitude, required double latitude}) async {
+    try {
+      final connectivityResult = await Connectivity().checkConnectivity();
+      if (connectivityResult == ConnectivityResult.mobile ||
+          connectivityResult == ConnectivityResult.wifi ||
+          connectivityResult == ConnectivityResult.ethernet ||
+          connectivityResult == ConnectivityResult.vpn) {
+        final res = await http.get(Uri.parse(
+            'https://api.openweathermap.org/data/2.5/weather?lat=$latitude&lon=$longitude&appid=d0eee6ea38d3912ec41e341c7fa10b05'));
+        Map data = jsonDecode(res.body);
+        print(data);
+        final weather = WeatherData(
+          updatedTime: DateTime.now(),
+          id: data['weather'][0]['id'],
+          specLocation: data['name'],
+          main: data['weather'][0]['main'],
+          icon: data['weather'][0]['icon'],
+          temp: data['main']['temp'],
+          feelsLike: data['main']['feels_like'],
+          humidity: data['main']['humidity'],
+          windSpeed: data['wind']['speed'],
+          longitude: longitude,
+          latitude: latitude,
+        );
+        addedWeatherList.add(weather);
+      } else {
+        showSnackbar('No Internet', 'Pls, Connect to Internet and Try Again!');
+      }
+    } catch (error) {
+      print(error.toString());
     }
   }
 
-  Future<void> getLocation() async {
+  Future<List<List<dynamic>>> readFromCsv() async {
+    final csvString = await rootBundle.loadString('assets/country_capital.csv');
+    final csvTable = CsvConverter().convert(csvString);
+    csvTable.removeAt(0);
+    return csvTable;
+  }
+
+  fetchDefaultWeathers() async {
+    try {
+      final connectivityResult = await Connectivity().checkConnectivity();
+      if (connectivityResult == ConnectivityResult.mobile ||
+          connectivityResult == ConnectivityResult.wifi ||
+          connectivityResult == ConnectivityResult.ethernet ||
+          connectivityResult == ConnectivityResult.vpn) {
+        cities.forEach((key, value) async {
+          final res = await http.get(Uri.parse(
+              'https://api.openweathermap.org/data/2.5/weather?lat=${value['latitude']}&lon=${value['longitude']}&appid=d0eee6ea38d3912ec41e341c7fa10b05'));
+          Map data = jsonDecode(res.body);
+          final weather = WeatherData(
+            updatedTime: DateTime.now(),
+            id: data['weather'][0]['id'],
+            specLocation: data['name'],
+            main: data['weather'][0]['main'],
+            icon: data['weather'][0]['icon'],
+            temp: data['main']['temp'],
+            feelsLike: data['main']['feels_like'],
+            humidity: data['main']['humidity'],
+            windSpeed: data['wind']['speed'],
+          );
+          defaultWeatherList.add(weather);
+        });
+      }
+    } catch (error) {
+      defaultWeatherList.clear();
+    }
+  }
+
+  Future<void> getBackgroundImage(String cityName) async {
+    try {
+      final res = await http.get(Uri.parse(
+          'https://api.unsplash.com/photos/random?query=$cityName&count=1&client_id=wW7pcYmq5ZEgMBlPyyeYn_HDj9XCqIKTbOQZatFJZC0'));
+      final data = jsonDecode(res.body);
+      if (data.runtimeType == List) {
+        backgroundImage.value = data[0]['urls']['regular'];
+      } else {
+        backgroundImage.value = '';
+      }
+    } catch (error) {
+      backgroundImage.value = '';
+    }
+  }
+
+  Future<void> getLocationPermission() async {
     Location location = Location();
 
     bool serviceEnabled;
@@ -75,7 +166,6 @@ class DataController extends GetxController {
             updatedTime: DateTime.now(),
             id: data['list'][0]['weather'][0]['id'],
             specLocation: data['city']['name'],
-            counry: data['city']['country'],
             main: data['list'][0]['weather'][0]['main'],
             icon: data['list'][0]['weather'][0]['icon'],
             temp: data['list'][0]['main']['temp'],
@@ -89,7 +179,6 @@ class DataController extends GetxController {
             updatedTime: DateTime.now(),
             id: data['list'][0]['weather'][0]['id'],
             specLocation: data['city']['name'],
-            counry: data['city']['country'],
             main: data['list'][0]['weather'][0]['main'],
             icon: data['list'][0]['weather'][0]['icon'],
             temp: data['list'][0]['main']['temp'],
@@ -97,13 +186,14 @@ class DataController extends GetxController {
             humidity: data['list'][0]['main']['humidity'],
             windSpeed: data['list'][0]['wind']['speed'],
           );
+          currentLatitude = latitude;
+          currentLongitude = longtude;
         }
         for (int i = 1; i <= 3; i++) {
           WeatherData weather = WeatherData(
             updatedTime: DateTime.now(),
             id: data['list'][i]['weather'][0]['id'],
             specLocation: data['city']['name'],
-            counry: data['city']['country'],
             main: data['list'][i]['weather'][0]['main'],
             icon: data['list'][i]['weather'][0]['icon'],
             temp: data['list'][i]['main']['temp'],

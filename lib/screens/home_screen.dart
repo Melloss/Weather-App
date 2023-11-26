@@ -66,15 +66,16 @@ class _HomeScreenState extends State<HomeScreen> with ColorPallet {
           children: [
             Row(
               children: [
-                const Icon(Icons.location_on),
+                const Icon(
+                  Icons.location_on,
+                  size: 32,
+                ),
                 const SizedBox(width: 10),
-                Obx(
-                  () => Text(
-                    dc.isWeatherSelected.value == true
-                        ? dc.selectedWeather!.specLocation
-                        : dc.todayWeather!.specLocation,
-                    style: Theme.of(context).textTheme.titleMedium,
-                  ),
+                Text(
+                  dc.isWeatherSelected.value == true
+                      ? dc.selectedWeather!.specLocation
+                      : dc.todayWeather!.specLocation,
+                  style: Theme.of(context).textTheme.titleMedium,
                 ),
               ],
             ),
@@ -104,14 +105,16 @@ class _HomeScreenState extends State<HomeScreen> with ColorPallet {
             style: Theme.of(context).textTheme.displayLarge,
           ),
           Text(
-            'Updates as of ${dc.todayWeather!.updatedTime.hour}:${dc.todayWeather!.updatedTime.minute} ${dc.todayWeather!.updatedTime.timeZoneName}',
+            'Updates as of ${dc.isWeatherSelected.value ? dc.selectedWeather!.updatedTime.hour : dc.todayWeather!.updatedTime.hour}:${dc.isWeatherSelected.value ? dc.selectedWeather!.updatedTime.minute : dc.todayWeather!.updatedTime.minute} ${dc.todayWeather!.updatedTime.timeZoneName}',
             style: Theme.of(context).textTheme.titleSmall,
           ),
           CachedNetworkImage(
               imageUrl:
-                  'http://openweathermap.org/img/wn/${dc.todayWeather!.icon}@2x.png'),
+                  'http://openweathermap.org/img/wn/${dc.isWeatherSelected.value ? dc.selectedWeather!.icon : dc.todayWeather!.icon}@2x.png'),
           Text(
-            dc.todayWeather!.main,
+            dc.isWeatherSelected.value
+                ? dc.selectedWeather!.main
+                : dc.todayWeather!.main,
             style: Theme.of(context).textTheme.displayLarge,
           ),
           Container(
@@ -121,7 +124,7 @@ class _HomeScreenState extends State<HomeScreen> with ColorPallet {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Text(
-                  '${dc.toCelsius(dc.todayWeather!.temp)}',
+                  '${dc.toCelsius(dc.isWeatherSelected.value ? dc.selectedWeather!.temp : dc.todayWeather!.temp)}',
                   style: Theme.of(context).textTheme.displayLarge!.copyWith(
                         fontSize: 60,
                       ),
@@ -154,11 +157,11 @@ class _HomeScreenState extends State<HomeScreen> with ColorPallet {
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
                 _buildIconDetail('assets/humidity.png', 'HUMIDITY',
-                    '${dc.todayWeather!.humidity}%'),
+                    '${dc.isWeatherSelected.value ? dc.selectedWeather!.humidity : dc.todayWeather!.humidity}%'),
                 _buildIconDetail('assets/wind.png', 'WIND',
-                    '${dc.todayWeather!.windSpeed}Km/h'),
+                    '${dc.isWeatherSelected.value ? dc.selectedWeather!.windSpeed : dc.todayWeather!.windSpeed}Km/h'),
                 _buildIconDetail('assets/feels_like.png', 'FEELS LIKE',
-                    '${dc.toCelsius(dc.todayWeather!.feelsLike)}ºc'),
+                    '${dc.toCelsius(dc.isWeatherSelected.value ? dc.selectedWeather!.feelsLike : dc.todayWeather!.feelsLike)}ºc'),
               ],
             ),
           ),
@@ -174,12 +177,16 @@ class _HomeScreenState extends State<HomeScreen> with ColorPallet {
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
                 _buildDayWeather(
-                    '${dc.getWeek(dc.todayWeather!.updatedTime.weekday)} ${dc.todayWeather!.updatedTime.day}',
-                    'http://openweathermap.org/img/wn/${dc.todayWeather!.icon}@2x.png',
-                    dc.toCelsius(dc.todayWeather!.temp),
-                    dc.todayWeather!.windSpeed),
+                    '${dc.getWeek(dc.isWeatherSelected.value ? dc.selectedWeather!.updatedTime.weekday : dc.todayWeather!.updatedTime.weekday)} ${dc.todayWeather!.updatedTime.day}',
+                    'http://openweathermap.org/img/wn/${dc.isWeatherSelected.value ? dc.selectedWeather!.icon : dc.todayWeather!.icon}@2x.png',
+                    dc.toCelsius(dc.isWeatherSelected.value
+                        ? dc.selectedWeather!.temp
+                        : dc.todayWeather!.temp),
+                    dc.isWeatherSelected.value
+                        ? dc.selectedWeather!.windSpeed
+                        : dc.todayWeather!.windSpeed),
                 _buildDayWeather(
-                  '${dc.getWeek(dc.todayWeather!.updatedTime.weekday + 1)} ${dc.todayWeather!.updatedTime.day + 1}',
+                  '${dc.getWeek((dc.isWeatherSelected.value ? dc.selectedWeather!.updatedTime.weekday : dc.todayWeather!.updatedTime.weekday) + 1)} ${(dc.isWeatherSelected.value ? dc.selectedWeather!.updatedTime.day : dc.todayWeather!.updatedTime.day) + 1}',
                   'http://openweathermap.org/img/wn/${dc.theNext3DaysWeatherList[0].icon}@2x.png',
                   dc.toCelsius(dc.theNext3DaysWeatherList[0].temp),
                   dc.theNext3DaysWeatherList[0].windSpeed,

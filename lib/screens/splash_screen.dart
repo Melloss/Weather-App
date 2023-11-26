@@ -27,7 +27,8 @@ class _SplashScreenState extends State<SplashScreen> with ColorPallet {
     });
     if (isFetched == true) {
       await dc.getBackgroundImage(dc.todayWeather!.specLocation);
-      await Future.delayed(const Duration(seconds: 1));
+      await dc.fetchDefaultWeathers();
+
       Get.to(
         () => const HomeScreen(),
         transition: Transition.fade,
@@ -37,7 +38,7 @@ class _SplashScreenState extends State<SplashScreen> with ColorPallet {
   }
 
   getEveryThing() async {
-    dc.getLocation().then((value) {
+    dc.getLocationPermission().then((value) {
       fetchWeather();
     });
   }

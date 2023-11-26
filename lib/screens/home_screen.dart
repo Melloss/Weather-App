@@ -1,5 +1,3 @@
-import 'dart:ui';
-
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -56,7 +54,7 @@ class _HomeScreenState extends State<HomeScreen> with ColorPallet {
 
   _buildLocationAndDrawer() {
     return Container(
-      margin: const EdgeInsets.only(top: 20),
+      margin: const EdgeInsets.only(top: 50, bottom: 30),
       width: screenWidth(context),
       height: 50,
       child: Padding(
@@ -145,68 +143,72 @@ class _HomeScreenState extends State<HomeScreen> with ColorPallet {
   }
 
   _buildBottom() {
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 10),
-      width: screenWidth(context),
-      height: 350,
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Expanded(
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                _buildIconDetail('assets/humidity.png', 'HUMIDITY',
-                    '${dc.isWeatherSelected.value ? dc.selectedWeather!.humidity : dc.todayWeather!.humidity}%'),
-                _buildIconDetail('assets/wind.png', 'WIND',
-                    '${dc.isWeatherSelected.value ? dc.selectedWeather!.windSpeed : dc.todayWeather!.windSpeed}Km/h'),
-                _buildIconDetail('assets/feels_like.png', 'FEELS LIKE',
-                    '${dc.toCelsius(dc.isWeatherSelected.value ? dc.selectedWeather!.feelsLike : dc.todayWeather!.feelsLike)}ºc'),
-              ],
-            ),
+    return Expanded(
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 20),
+        width: screenWidth(context),
+        height: 350,
+        child: SingleChildScrollView(
+          physics: const BouncingScrollPhysics(),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: [
+                  _buildIconDetail('assets/humidity.png', 'HUMIDITY',
+                      '${dc.isWeatherSelected.value ? dc.selectedWeather!.humidity : dc.todayWeather!.humidity}%'),
+                  _buildIconDetail('assets/wind.png', 'WIND',
+                      '${dc.isWeatherSelected.value ? dc.selectedWeather!.windSpeed : dc.todayWeather!.windSpeed}Km/h'),
+                  _buildIconDetail('assets/feels_like.png', 'FEELS LIKE',
+                      '${dc.toCelsius(dc.isWeatherSelected.value ? dc.selectedWeather!.feelsLike : dc.todayWeather!.feelsLike)}ºc'),
+                ],
+              ),
+              Container(
+                width: screenWidth(context),
+                margin:
+                    const EdgeInsets.symmetric(horizontal: 15, vertical: 35),
+                height: 170,
+                decoration: BoxDecoration(
+                  color: foregroundColor,
+                  borderRadius: BorderRadius.circular(24),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  children: [
+                    _buildDayWeather(
+                        '${dc.getWeek(dc.isWeatherSelected.value ? dc.selectedWeather!.updatedTime.weekday : dc.todayWeather!.updatedTime.weekday)} ${dc.todayWeather!.updatedTime.day}',
+                        'http://openweathermap.org/img/wn/${dc.isWeatherSelected.value ? dc.selectedWeather!.icon : dc.todayWeather!.icon}@2x.png',
+                        dc.toCelsius(dc.isWeatherSelected.value
+                            ? dc.selectedWeather!.temp
+                            : dc.todayWeather!.temp),
+                        dc.isWeatherSelected.value
+                            ? dc.selectedWeather!.windSpeed
+                            : dc.todayWeather!.windSpeed),
+                    _buildDayWeather(
+                      '${dc.getWeek((dc.isWeatherSelected.value ? dc.selectedWeather!.updatedTime.weekday : dc.todayWeather!.updatedTime.weekday) + 1)} ${(dc.isWeatherSelected.value ? dc.selectedWeather!.updatedTime.day : dc.todayWeather!.updatedTime.day) + 1}',
+                      'http://openweathermap.org/img/wn/${dc.theNext3DaysWeatherList[0].icon}@2x.png',
+                      dc.toCelsius(dc.theNext3DaysWeatherList[0].temp),
+                      dc.theNext3DaysWeatherList[0].windSpeed,
+                    ),
+                    _buildDayWeather(
+                      '${dc.getWeek(dc.todayWeather!.updatedTime.weekday + 2)} ${dc.todayWeather!.updatedTime.day + 2}',
+                      'http://openweathermap.org/img/wn/${dc.theNext3DaysWeatherList[1].icon}@2x.png',
+                      dc.toCelsius(dc.theNext3DaysWeatherList[1].temp),
+                      dc.theNext3DaysWeatherList[1].windSpeed,
+                    ),
+                    _buildDayWeather(
+                      '${dc.getWeek(dc.todayWeather!.updatedTime.weekday + 3)} ${dc.todayWeather!.updatedTime.day + 3}',
+                      'http://openweathermap.org/img/wn/${dc.theNext3DaysWeatherList[2].icon}@2x.png',
+                      dc.toCelsius(dc.theNext3DaysWeatherList[2].temp),
+                      dc.theNext3DaysWeatherList[2].windSpeed,
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ),
-          Container(
-            width: screenWidth(context),
-            margin: const EdgeInsets.symmetric(horizontal: 15),
-            height: 170,
-            decoration: BoxDecoration(
-              color: foregroundColor,
-              borderRadius: BorderRadius.circular(24),
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                _buildDayWeather(
-                    '${dc.getWeek(dc.isWeatherSelected.value ? dc.selectedWeather!.updatedTime.weekday : dc.todayWeather!.updatedTime.weekday)} ${dc.todayWeather!.updatedTime.day}',
-                    'http://openweathermap.org/img/wn/${dc.isWeatherSelected.value ? dc.selectedWeather!.icon : dc.todayWeather!.icon}@2x.png',
-                    dc.toCelsius(dc.isWeatherSelected.value
-                        ? dc.selectedWeather!.temp
-                        : dc.todayWeather!.temp),
-                    dc.isWeatherSelected.value
-                        ? dc.selectedWeather!.windSpeed
-                        : dc.todayWeather!.windSpeed),
-                _buildDayWeather(
-                  '${dc.getWeek((dc.isWeatherSelected.value ? dc.selectedWeather!.updatedTime.weekday : dc.todayWeather!.updatedTime.weekday) + 1)} ${(dc.isWeatherSelected.value ? dc.selectedWeather!.updatedTime.day : dc.todayWeather!.updatedTime.day) + 1}',
-                  'http://openweathermap.org/img/wn/${dc.theNext3DaysWeatherList[0].icon}@2x.png',
-                  dc.toCelsius(dc.theNext3DaysWeatherList[0].temp),
-                  dc.theNext3DaysWeatherList[0].windSpeed,
-                ),
-                _buildDayWeather(
-                  '${dc.getWeek(dc.todayWeather!.updatedTime.weekday + 2)} ${dc.todayWeather!.updatedTime.day + 2}',
-                  'http://openweathermap.org/img/wn/${dc.theNext3DaysWeatherList[1].icon}@2x.png',
-                  dc.toCelsius(dc.theNext3DaysWeatherList[1].temp),
-                  dc.theNext3DaysWeatherList[1].windSpeed,
-                ),
-                _buildDayWeather(
-                  '${dc.getWeek(dc.todayWeather!.updatedTime.weekday + 3)} ${dc.todayWeather!.updatedTime.day + 3}',
-                  'http://openweathermap.org/img/wn/${dc.theNext3DaysWeatherList[2].icon}@2x.png',
-                  dc.toCelsius(dc.theNext3DaysWeatherList[2].temp),
-                  dc.theNext3DaysWeatherList[2].windSpeed,
-                ),
-              ],
-            ),
-          ),
-        ],
+        ),
       ),
     );
   }

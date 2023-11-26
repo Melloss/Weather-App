@@ -46,7 +46,7 @@ class DataController extends GetxController {
         final res = await http.get(Uri.parse(
             'https://api.openweathermap.org/data/2.5/weather?lat=$latitude&lon=$longitude&appid=d0eee6ea38d3912ec41e341c7fa10b05'));
         Map data = jsonDecode(res.body);
-        print(data);
+
         final weather = WeatherData(
           updatedTime: DateTime.now(),
           id: data['weather'][0]['id'],
@@ -211,7 +211,7 @@ class DataController extends GetxController {
         return true;
       }
     } catch (error) {
-      showSnackbar('Error', error.toString());
+      print(error.toString());
     }
     return false;
   }

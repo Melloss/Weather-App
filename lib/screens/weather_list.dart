@@ -97,9 +97,11 @@ class _WeatherListState extends State<WeatherList> with ColorPallet {
                           icon: dc.defaultWeatherList[1].icon,
                           temp: dc.defaultWeatherList[1].temp,
                           latitude: dc.cities[dc.defaultWeatherList[1]
-                              .specLocation]!['latitude']!,
+                                  .specLocation]!['latitude'] ??
+                              0,
                           longitude: dc.cities[dc.defaultWeatherList[1]
-                              .specLocation]!['longitude']!,
+                                  .specLocation]!['longitude'] ??
+                              0,
                         ),
                         Visibility(
                           visible: dc.addedWeatherList.isNotEmpty,
@@ -143,8 +145,7 @@ class _WeatherListState extends State<WeatherList> with ColorPallet {
 
   _buildTop() {
     return Container(
-      margin: const EdgeInsets.only(top: 20),
-      height: screenHeight(context) * 0.17,
+      margin: const EdgeInsets.only(top: 25, bottom: 20),
       padding: const EdgeInsets.symmetric(horizontal: 15.0),
       child: AnimatedSwitcher(
         switchInCurve: Curves.fastEaseInToSlowEaseOut,
@@ -224,7 +225,7 @@ class _WeatherListState extends State<WeatherList> with ColorPallet {
         });
 
         if (isFetched == true) {
-          Get.to(() => const HomeScreen());
+          Get.offAll(() => const HomeScreen());
         }
       },
       child: Container(

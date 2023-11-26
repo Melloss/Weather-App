@@ -17,6 +17,7 @@ class MainApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GetMaterialApp(
+      useInheritedMediaQuery: true,
       debugShowCheckedModeBanner: false,
       home: const SplashScreen(),
       theme: _buildTheme(),
@@ -39,24 +40,25 @@ class MainApp extends StatelessWidget {
         size: 35,
       ),
       textTheme: const TextTheme(
-          titleMedium: TextStyle(
-            color: Colors.white,
-            fontSize: 20,
-          ),
-          titleSmall: TextStyle(
-            color: Colors.white,
-            fontSize: 16,
-            fontWeight: FontWeight.w300,
-          ),
-          displayLarge: TextStyle(
-            color: Colors.white,
-            fontSize: 37,
-            fontWeight: FontWeight.bold,
-          ),
-          displayMedium: TextStyle(
-            color: Colors.white,
-            fontSize: 18,
-          )),
+        titleMedium: TextStyle(
+          color: Colors.white,
+          fontSize: 20,
+        ),
+        titleSmall: TextStyle(
+          color: Colors.white,
+          fontSize: 16,
+          fontWeight: FontWeight.w300,
+        ),
+        displayLarge: TextStyle(
+          color: Colors.white,
+          fontSize: 30,
+          fontWeight: FontWeight.bold,
+        ),
+        displayMedium: TextStyle(
+          color: Colors.white,
+          fontSize: 18,
+        ),
+      ),
     );
   }
 }

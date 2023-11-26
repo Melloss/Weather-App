@@ -45,5 +45,11 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>You need to enable the location to get your city weather data!</string>
+	<key>NSLocationAlwaysUsageDescription</key>
+	<string>You need to enable the location to get your city weather data!</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>You need to enable the location to get your city weather data!</string>
 </dict>
 </plist>

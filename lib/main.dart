@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
-import './screens/home_screen.dart';
 
-void main() {
+import './screens/splash_screen.dart';
+import './controllers/init_controllers.dart';
+
+void main() async {
+  initController();
+
   runApp(const MainApp());
 }
 
@@ -14,7 +18,7 @@ class MainApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return GetMaterialApp(
       debugShowCheckedModeBanner: false,
-      home: const HomeScreen(),
+      home: const SplashScreen(),
       theme: _buildTheme(),
     );
   }

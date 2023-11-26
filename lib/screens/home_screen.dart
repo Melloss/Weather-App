@@ -1,6 +1,12 @@
+import 'dart:ui';
+
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:weather_app/screens/weather_list.dart';
+import 'package:shimmer_image/shimmer_image.dart';
+
+import '../controllers/data_controller.dart';
+import '../screens/weather_list.dart';
 import '../utilities/color_pallet.dart';
 import '../utilities/media_query.dart';
 
@@ -12,11 +18,24 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> with ColorPallet {
+  DataController dc = Get.find();
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: Stack(children: [
-        Image.asset('assets/Preview.png', fit: BoxFit.cover),
+        Obx(() => dc.backgroundImage.isEmpty
+            ? Image.asset(
+                'assets/preview.jpg',
+                fit: BoxFit.cover,
+                width: screenWidth(context),
+                height: screenHeight(context),
+              )
+            : ProgressiveImage(
+                image: dc.backgroundImage.value,
+                width: screenWidth(context),
+                fit: BoxFit.cover,
+                height: screenHeight(context),
+              )),
         Positioned(
           child: Container(
             width: screenWidth(context),
@@ -49,9 +68,13 @@ class _HomeScreenState extends State<HomeScreen> with ColorPallet {
               children: [
                 const Icon(Icons.location_on),
                 const SizedBox(width: 10),
-                Text(
-                  'New York',
-                  style: Theme.of(context).textTheme.titleMedium,
+                Obx(
+                  () => Text(
+                    dc.isWeatherSelected.value == true
+                        ? dc.selectedWeather!.specLocation
+                        : dc.todayWeather!.specLocation,
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
                 ),
               ],
             ),
@@ -76,19 +99,19 @@ class _HomeScreenState extends State<HomeScreen> with ColorPallet {
       child: Column(
         children: [
           Text(
-            'June 10',
+            //month date
+            '${dc.getMonth(dc.todayWeather!.updatedTime.month)} ${dc.todayWeather!.updatedTime.day}',
             style: Theme.of(context).textTheme.displayLarge,
           ),
           Text(
-            'Updates as of 10:14 PM GMT-4',
+            'Updates as of ${dc.todayWeather!.updatedTime.hour}:${dc.todayWeather!.updatedTime.minute} ${dc.todayWeather!.updatedTime.timeZoneName}',
             style: Theme.of(context).textTheme.titleSmall,
           ),
-          Image.asset(
-            'assets/sunny.png',
-            fit: BoxFit.cover,
-          ),
+          CachedNetworkImage(
+              imageUrl:
+                  'http://openweathermap.org/img/wn/${dc.todayWeather!.icon}@2x.png'),
           Text(
-            'Sunny',
+            dc.todayWeather!.main,
             style: Theme.of(context).textTheme.displayLarge,
           ),
           Container(
@@ -98,7 +121,7 @@ class _HomeScreenState extends State<HomeScreen> with ColorPallet {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Text(
-                  '33',
+                  '${dc.toCelsius(dc.todayWeather!.temp)}',
                   style: Theme.of(context).textTheme.displayLarge!.copyWith(
                         fontSize: 60,
                       ),
@@ -126,13 +149,18 @@ class _HomeScreenState extends State<HomeScreen> with ColorPallet {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              _buildIconDetail('assets/humidity.png', 'HUMIDITY', '52%'),
-              _buildIconDetail('assets/wind.png', 'WIND', '15Km/h'),
-              _buildIconDetail('assets/feels_like.png', 'FEELS LIKE', '24º'),
-            ],
+          Expanded(
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                _buildIconDetail('assets/humidity.png', 'HUMIDITY',
+                    '${dc.todayWeather!.humidity}%'),
+                _buildIconDetail('assets/wind.png', 'WIND',
+                    '${dc.todayWeather!.windSpeed}Km/h'),
+                _buildIconDetail('assets/feels_like.png', 'FEELS LIKE',
+                    '${dc.toCelsius(dc.todayWeather!.feelsLike)}ºc'),
+              ],
+            ),
           ),
           Container(
             width: screenWidth(context),
@@ -145,12 +173,29 @@ class _HomeScreenState extends State<HomeScreen> with ColorPallet {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
-                _buildDayWeather('Wed 16', 'assets/half_cloudy.png', 22, '1-5'),
                 _buildDayWeather(
-                    'Thu 17', 'assets/sun_with_cloud.png', 25, '1-5'),
+                    '${dc.getWeek(dc.todayWeather!.updatedTime.weekday)} ${dc.todayWeather!.updatedTime.day}',
+                    'http://openweathermap.org/img/wn/${dc.todayWeather!.icon}@2x.png',
+                    dc.toCelsius(dc.todayWeather!.temp),
+                    dc.todayWeather!.windSpeed),
                 _buildDayWeather(
-                    'Fro 18', 'assets/sun_with_cloud.png', 23, '1-5'),
-                _buildDayWeather('Sat 19', 'assets/raining.png', 25, '1-5'),
+                  '${dc.getWeek(dc.todayWeather!.updatedTime.weekday + 1)} ${dc.todayWeather!.updatedTime.day + 1}',
+                  'http://openweathermap.org/img/wn/${dc.theNext3DaysWeatherList[0].icon}@2x.png',
+                  dc.toCelsius(dc.theNext3DaysWeatherList[0].temp),
+                  dc.theNext3DaysWeatherList[0].windSpeed,
+                ),
+                _buildDayWeather(
+                  '${dc.getWeek(dc.todayWeather!.updatedTime.weekday + 2)} ${dc.todayWeather!.updatedTime.day + 2}',
+                  'http://openweathermap.org/img/wn/${dc.theNext3DaysWeatherList[1].icon}@2x.png',
+                  dc.toCelsius(dc.theNext3DaysWeatherList[1].temp),
+                  dc.theNext3DaysWeatherList[1].windSpeed,
+                ),
+                _buildDayWeather(
+                  '${dc.getWeek(dc.todayWeather!.updatedTime.weekday + 3)} ${dc.todayWeather!.updatedTime.day + 3}',
+                  'http://openweathermap.org/img/wn/${dc.theNext3DaysWeatherList[2].icon}@2x.png',
+                  dc.toCelsius(dc.theNext3DaysWeatherList[2].temp),
+                  dc.theNext3DaysWeatherList[2].windSpeed,
+                ),
               ],
             ),
           ),
@@ -171,44 +216,38 @@ class _HomeScreenState extends State<HomeScreen> with ColorPallet {
     );
   }
 
-  _buildDayWeather(String day, String imagePath, int temprature, String wind) {
+  _buildDayWeather(
+      String day, String imagePath, double temprature, double wind) {
     return Expanded(
       child: Stack(
         children: [
           Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               const SizedBox(height: 15),
               Text(
                 day,
                 style: Theme.of(context).textTheme.displayMedium,
               ),
-              Image.asset(
-                imagePath,
-                fit: BoxFit.cover,
+              CachedNetworkImage(
+                imageUrl: imagePath,
+                width: 100,
+                height: 50,
               ),
+              Text(
+                '$tempratureº',
+                style: Theme.of(context).textTheme.titleSmall,
+              ),
+              const SizedBox(height: 7),
+              Text(
+                '$wind\nkm/h',
+                textAlign: TextAlign.center,
+                style: Theme.of(context).textTheme.titleSmall!.copyWith(
+                      fontSize: 11,
+                    ),
+              )
             ],
           ),
-          Positioned(
-            left: 35,
-            top: 90,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Text(
-                  '$tempratureº',
-                  style: Theme.of(context).textTheme.titleSmall,
-                ),
-                const SizedBox(height: 7),
-                Text(
-                  '$wind\nkm/h',
-                  textAlign: TextAlign.center,
-                  style: Theme.of(context).textTheme.titleSmall!.copyWith(
-                        fontSize: 11,
-                      ),
-                )
-              ],
-            ),
-          )
         ],
       ),
     );
